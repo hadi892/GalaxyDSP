@@ -1,4 +1,5 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.util.Base64
 
 plugins {
   alias(libs.plugins.android.application)
@@ -26,16 +27,31 @@ android {
   signingConfigs {
     create("release") {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      val releaseStoreFile = file(keystorePath)
+      if (releaseStoreFile.exists()) {
+        storeFile = releaseStoreFile
+        storePassword = System.getenv("STORE_PASSWORD")
+        keyAlias = "upload"
+        keyPassword = System.getenv("KEY_PASSWORD")
+      }
     }
     create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+      val debugKeystoreFile = file("${rootDir}/debug.keystore")
+      val debugKeystoreBase64File = file("${rootDir}/debug.keystore.base64")
+      if (!debugKeystoreFile.exists() && debugKeystoreBase64File.exists()) {
+        try {
+          debugKeystoreFile.writeBytes(
+              Base64.getDecoder().decode(debugKeystoreBase64File.readText().trim()))
+        } catch (e: Exception) {
+          // Ignore decoding errors
+        }
+      }
+      if (debugKeystoreFile.exists()) {
+        storeFile = debugKeystoreFile
+        storePassword = "android"
+        keyAlias = "androiddebugkey"
+        keyPassword = "android"
+      }
     }
   }
 
@@ -47,7 +63,12 @@ android {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
       signingConfig = if (file(keystorePath).exists()) signingConfigs.getByName("release") else null
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug {
+      val debugKeystoreFile = file("${rootDir}/debug.keystore")
+      if (debugKeystoreFile.exists()) {
+        signingConfig = signingConfigs.getByName("debugConfig")
+      }
+    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
