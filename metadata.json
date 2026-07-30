@@ -1,0 +1,6 @@
+{
+  "name": "GalaxyDSP",
+  "description": "Research-grade modular DSP framework capable of processing digital signal streams and implementing a DVB-S receiver processing pipeline with interactive Spectrum, Waterfall, Constellation, and FFT visualizers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
