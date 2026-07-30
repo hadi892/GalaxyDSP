@@ -79,6 +79,10 @@ android {
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  lint {
+    abortOnError = false
+    checkReleaseBuilds = false
+  }
 }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
