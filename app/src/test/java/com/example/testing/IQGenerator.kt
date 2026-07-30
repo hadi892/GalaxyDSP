@@ -1,4 +1,4 @@
-package com.example.iq
+package com.example.testing
 
 import com.example.core.ComplexVector
 import kotlin.math.cos
@@ -10,6 +10,8 @@ import kotlin.random.Random
 /**
  * Programmable I/Q signal generator for synthesizing DVB-S test streams, continuous-wave (CW) carriers,
  * BPSK/QPSK constellations, AWGN noise, and swept chirps.
+ *
+ * NOTE: This class is placed strictly inside the testing package per real-hardware production rules.
  *
  * @param sampleRateHz Sample rate in Hertz.
  */

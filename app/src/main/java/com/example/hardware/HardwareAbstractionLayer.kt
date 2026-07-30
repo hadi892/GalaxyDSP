@@ -1,14 +1,18 @@
 package com.example.hardware
 
+import com.example.common.DSPException
 import com.example.core.ComplexVector
-import com.example.iq.IQGenerator
 import com.example.pipeline.SignalSourceInterface
-import kotlin.math.sin
 
 /**
  * Hardware Abstraction Layer (HAL) for RF Frontend and SDR devices.
- * Provides synthetic streaming I/Q source with real-time simulated DVB-S QPSK signals,
- * AWGN noise floor, and configurable RF carrier frequencies.
+ * Adheres strictly to the REAL SIGNAL ARCHITECTURE:
+ * Never generates synthetic or simulated DSP data in production builds.
+ *
+ * All DSP modules receive samples only through hardware abstraction interfaces
+ * such as [IQFileSource] or [HardwareSignalSource].
+ * If hardware is unavailable, readSamples returns 0 so the application reports
+ * "No compatible signal source available".
  *
  * @property sampleRateHz Configured sampling rate in Hertz.
  * @property centerFrequencyHz Configured RF center frequency in Hertz.
@@ -21,28 +25,62 @@ class HardwareAbstractionLayer(
     override var isActive: Boolean = false
         private set
 
-    private val generator = IQGenerator(sampleRateHz)
-    private var snrDb = 18.0f
+    private var activeSource: SignalSourceInterface? = null
+    private var channelSnrDb: Float = 18.0f
 
     /**
-     * Starts RF sample acquisition.
+     * Attaches an operational signal source (e.g. [IQFileSource]) or attempts to connect
+     * a [HardwareSignalSource] which will throw a meaningful exception if unsupported on this device.
+     */
+    fun attachSource(source: SignalSourceInterface) {
+        activeSource = source
+        if (source is HardwareSignalSource) {
+            source.connect()
+        } else if (source is IQFileSource) {
+            source.start()
+        }
+    }
+
+    /**
+     * Detaches any currently attached signal source.
+     */
+    fun detachSource() {
+        val src = activeSource
+        if (src is HardwareSignalSource) {
+            src.disconnect()
+        } else if (src is IQFileSource) {
+            src.stop()
+        }
+        activeSource = null
+    }
+
+    /**
+     * Starts sample acquisition from the attached signal source.
      */
     fun startCapture() {
         isActive = true
+        val src = activeSource
+        if (src is IQFileSource) {
+            src.start()
+        }
     }
 
     /**
-     * Stops RF sample acquisition.
+     * Stops sample acquisition.
      */
     fun stopCapture() {
         isActive = false
+        val src = activeSource
+        if (src is IQFileSource) {
+            src.stop()
+        }
     }
 
     /**
-     * Adjusts the simulated channel SNR in dB.
+     * Adjusts channel SNR reference setting in dB.
      */
     fun setChannelSnrDb(snr: Float) {
-        snrDb = snr.coerceIn(-10f, 50f)
+        channelSnrDb = snr.coerceIn(-10f, 50f)
     }
 
     override fun readSamples(destination: ComplexVector, maxSamples: Int): Int {
@@ -50,15 +88,10 @@ class HardwareAbstractionLayer(
             destination.clear()
             return 0
         }
-        val count = minOf(destination.size, maxSamples)
-        val target = if (count == destination.size) {
-            destination
-        } else {
-            ComplexVector(count)
-        }
-        generator.generateQpskStream(target, symbolRateHz = 500_000f, snrDb = snrDb)
-        if (count < destination.size) {
-            System.arraycopy(target.data, 0, destination.data, 0, count * 2)
+        val source = activeSource ?: return 0
+        val count = source.readSamples(destination, maxSamples)
+        if (count == 0) {
+            destination.clear()
         }
         return count
     }

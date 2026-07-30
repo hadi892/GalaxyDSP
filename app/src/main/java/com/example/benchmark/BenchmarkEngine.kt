@@ -3,7 +3,6 @@ package com.example.benchmark
 import com.example.core.ComplexVector
 import com.example.fft.FFT
 import com.example.filters.RootRaisedCosineFilter
-import com.example.iq.IQGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.system.measureNanoTime
@@ -38,8 +37,12 @@ class BenchmarkEngine {
         val testSize = 1024
         val iterations = 500
         val vector = ComplexVector(testSize)
-        val generator = IQGenerator(sampleRateHz)
-        generator.generateQpskStream(vector, symbolRateHz = 500_000f, snrDb = 20f)
+        // Initialize deterministic QPSK-like test points for throughput benchmarking
+        for (i in 0 until testSize) {
+            val re = if ((i and 1) == 0) 0.70710678f else -0.70710678f
+            val im = if ((i and 2) == 0) 0.70710678f else -0.70710678f
+            vector.setRaw(i, re, im)
+        }
 
         // 1. FFT Benchmark
         val fft = FFT(testSize)

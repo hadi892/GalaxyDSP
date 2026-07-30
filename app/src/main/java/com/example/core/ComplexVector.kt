@@ -40,6 +40,13 @@ class ComplexVector(
     /**
      * Sets the real and imaginary components at [index] without object allocation.
      */
+    fun set(index: Int, re: Float, im: Float) {
+        setRaw(index, re, im)
+    }
+
+    /**
+     * Sets the real and imaginary components at [index] without object allocation.
+     */
     fun setRaw(index: Int, re: Float, im: Float) {
         val i2 = index * 2
         data[i2] = re
