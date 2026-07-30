@@ -41,7 +41,7 @@ android {
       if (!debugKeystoreFile.exists() && debugKeystoreBase64File.exists()) {
         try {
           debugKeystoreFile.writeBytes(
-              Base64.getDecoder().decode(debugKeystoreBase64File.readText().trim()))
+              Base64.getMimeDecoder().decode(debugKeystoreBase64File.readText().trim()))
         } catch (e: Exception) {
           // Ignore decoding errors
         }
