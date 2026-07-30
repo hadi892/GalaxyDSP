@@ -29,17 +29,20 @@ jobs:
           gradle-version: '9.3.1'
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Run Android Lint Check
-        run: gradle :app:lintDebug --stacktrace --no-daemon
+        run: ./gradlew :app:lintDebug --stacktrace --no-daemon
 
       - name: Run DSP Mathematical & Receiver Unit Tests
-        run: gradle :app:testDebugUnitTest --stacktrace --no-daemon
+        run: ./gradlew :app:testDebugUnitTest --stacktrace --no-daemon
 
       - name: Assemble Debug APK
-        run: gradle :app:assembleDebug --stacktrace --no-daemon
+        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
 
       - name: Assemble Release APK
-        run: gradle :app:assembleRelease --stacktrace --no-daemon
+        run: ./gradlew :app:assembleRelease --stacktrace --no-daemon
 
       - name: Upload GalaxyDSP-debug.apk Artifact
         uses: actions/upload-artifact@v4
