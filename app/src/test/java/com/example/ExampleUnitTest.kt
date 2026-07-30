@@ -37,14 +37,15 @@ class ExampleUnitTest {
 
     @Test
     fun testAutomaticGainControl() {
-        val agc = AGC(targetLevelRms = 0.707f)
+        val agc = AGC(targetLevelRms = 0.707f, attackRate = 0.15f)
         val vector = ComplexVector(64)
-        // Set small amplitude signals
-        for (i in 0 until 64) {
-            vector.set(i, 0.1f, 0.1f)
+        // Simulate a continuous stream of low-amplitude frames until AGC boosts RMS
+        for (step in 0 until 15) {
+            for (i in 0 until 64) {
+                vector.set(i, 0.1f, 0.1f)
+            }
+            agc.processInPlace(vector)
         }
-
-        agc.processInPlace(vector)
         val afterRms = Math.sqrt(vector.magnitudeSquared(0).toDouble()).toFloat()
         assertTrue("AGC should boost low amplitude towards target RMS", afterRms > 0.15f)
     }

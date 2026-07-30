@@ -86,6 +86,22 @@ class ComplexVector(
     }
 
     /**
+     * Returns the squared magnitude (power) of the complex number at [index].
+     */
+    fun magnitudeSquared(index: Int): Float {
+        val re = getRe(index)
+        val im = getIm(index)
+        return re * re + im * im
+    }
+
+    /**
+     * Alias for scaleInPlace(factor).
+     */
+    fun scale(factor: Float) {
+        scaleInPlace(factor)
+    }
+
+    /**
      * Scales the vector in-place by a real factor.
      */
     fun scaleInPlace(factor: Float) {

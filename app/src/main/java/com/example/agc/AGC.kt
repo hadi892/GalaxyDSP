@@ -46,7 +46,7 @@ class AGC(
         val measuredRms = sqrt(totalEnergy / maxOf(1, len))
         if (measuredRms > 1e-6f) {
             val error = targetLevelRms - measuredRms
-            val rate = if (error < 0f) attackRate else decayRate
+            val rate = if (error > 0f) attackRate else decayRate
             currentGain += rate * error * currentGain
             // Clamp gain to safe bounds [-40dB to +60dB]
             currentGain = currentGain.coerceIn(0.01f, 1000f)
