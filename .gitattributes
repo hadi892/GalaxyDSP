@@ -1,0 +1,19 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare binary files to prevent CRLF line-ending corruption
+*.jar binary
+*.keystore binary
+*.base64 binary
+*.apk binary
+*.aab binary
+*.so binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
